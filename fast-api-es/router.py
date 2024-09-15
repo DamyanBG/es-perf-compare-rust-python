@@ -21,7 +21,6 @@ async def get_product_by_id(product_id: int):
     if not hits:
         return f"No product with id {product_id}"
     response = hits[0]["_source"]
-    print(response)
     return response
 
 
@@ -49,5 +48,4 @@ async def get_product_by_id(search: str):
     if not hits:
         return f"No products found for {search}"
     response = [product["_source"] for product in hits]
-    print(response)
     return response

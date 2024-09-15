@@ -4,7 +4,7 @@ from elasticsearch.exceptions import ConnectionError
 
 ELASTIC_HOST = "http://localhost:9200"
 
-products_index_name = "products01"
+products_index_name = "products02"
 
 products_mapping = {
     "mappings": {

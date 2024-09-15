@@ -10,6 +10,8 @@ async def load_dataset():
     # Remove the "Image" column
     df = df.drop("Image")
 
+    await es.create_index_if_not_exists(index_name=products_index_name, mapping=products_mapping)
+
     # Convert the DataFrame to a list of dictionaries for each document
     records = df.to_dicts()
 
