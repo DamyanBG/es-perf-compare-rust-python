@@ -1,9 +1,17 @@
-use std::error::Error;
+use std::{env, error::Error};
+
+use dotenv::dotenv;
 
 use actix_web::{get, web::{self, Data}, App, HttpResponse, HttpServer, Responder};
-use elasticsearch::{http::{response::Response, transport::Transport}, Elasticsearch, GetParts, SearchParts};
+use elasticsearch::{auth::Credentials, http::{response::Response, transport::Transport}, Elasticsearch, GetParts, SearchParts};
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
+
+struct Config {
+    api_key: String,
+    api_key_id: String,
+    cloud_id: String,
+}
 
 #[derive(Debug, Serialize, Deserialize)]
 struct Product {
@@ -23,6 +31,21 @@ struct ElSearch {
 }
 
 impl ElSearch {
+    fn new_from_cloudhost(config: &Config) -> Self {
+        let api_key = &config.api_key;
+        let api_key_id = &config.api_key_id;
+        let cloud_id = &config.cloud_id;
+
+        let credentials = Credentials::ApiKey(api_key_id.to_string(), api_key.to_string());
+        let transport = Transport::cloud(cloud_id, credentials).unwrap();
+
+        let es_client = Elasticsearch::new(transport);
+
+        ElSearch {
+            client: es_client
+        }
+    }
+
     fn new_localhost() -> Self {
         let transport = Transport::single_node("http://localhost:9200").unwrap();
 
@@ -125,7 +148,19 @@ async fn get_search_products(es: web::Data<ElSearch>, search: web::Path<String>)
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    let es = ElSearch::new_localhost();
+    dotenv().ok();
+
+    let cloud_id = env::var("CLOUD_ID").unwrap();
+    let api_key = env::var("API_KEY").unwrap();
+    let api_key_id = env::var("API_KEY_ID").unwrap();
+
+    let config = Config {
+        api_key,
+        api_key_id,
+        cloud_id
+    };
+
+    let es = ElSearch::new_from_cloudhost(&config);
 
     let app_data = Data::new(es);
 
@@ -136,7 +171,7 @@ async fn main() -> std::io::Result<()> {
             .service(get_search_products)
     })
     .bind(("127.0.0.1", 8080))?
-    .workers(4)
+    // .workers(4)
     .run()
     .await
 }

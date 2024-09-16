@@ -3,9 +3,11 @@ from pprint import pprint
 from elasticsearch import Elasticsearch
 from elasticsearch.exceptions import ConnectionError
 
+from config import CLOUD_ID, API_KEY, ES_HOST, API_KEY_ID
+
 ELASTIC_HOST = "http://localhost:9200"
 
-products_index_name = "products01"
+products_index_name = "products02"
 
 products_mapping = {
     "mappings": {
@@ -39,7 +41,8 @@ class Search:
 
     def __init__(self) -> None:
         try:
-            self.es = Elasticsearch(ELASTIC_HOST)
+            # self.es = Elasticsearch(ELASTIC_HOST)
+            self.es = Elasticsearch(cloud_id=CLOUD_ID, api_key=(API_KEY, API_KEY_ID))
             client_info = self.es.info()
             print("Connected to Elasticsearch!")
             pprint(client_info.body)

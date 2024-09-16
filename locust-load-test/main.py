@@ -1,7 +1,7 @@
 from locust import HttpUser, TaskSet, task, between
 import polars as pl
-import time
 import random
+from itertools import filterfalse
 
 
 class UserBehavior(TaskSet):
@@ -22,7 +22,8 @@ class UserBehavior(TaskSet):
         unique_words = set()
         for title in titles:
             words = title.split()
-            unique_words.update(words)
+            filtered_words = list(filterfalse(lambda x: "/" in x, words))
+            unique_words.update(filtered_words)
         
         return tuple(unique_words)
 
@@ -44,4 +45,4 @@ class UserBehavior(TaskSet):
 class WebsiteUser(HttpUser):
     tasks = [UserBehavior]
     wait_time = between(1, 3)
-    host = "http://127.0.0.1:8080"
+    host = "http://127.0.0.1:8000"

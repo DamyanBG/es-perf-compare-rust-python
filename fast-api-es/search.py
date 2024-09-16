@@ -2,6 +2,8 @@ from typing import Mapping
 from elasticsearch import AsyncElasticsearch
 from elasticsearch.exceptions import ConnectionError
 
+from config import CLOUD_ID, API_KEY, ES_HOST, API_KEY_ID
+
 ELASTIC_HOST = "http://localhost:9200"
 
 products_index_name = "products02"
@@ -27,8 +29,10 @@ class Search:
     _connected: bool = True
 
     def __init__(self) -> None:
+        print(CLOUD_ID)
         try:
-            self._es = AsyncElasticsearch(ELASTIC_HOST)
+            # self._es = AsyncElasticsearch(ELASTIC_HOST)
+            self._es = AsyncElasticsearch(cloud_id=CLOUD_ID, api_key=(API_KEY, API_KEY_ID))
 
         except ConnectionError:
             self._connected = False
